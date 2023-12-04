@@ -40,7 +40,7 @@ Centremos nuestra atención el componente `Job`:
 
 ---
 
-## Dependencias
+## Dependencias y configuraciones iniciales
 
 ````xml
 <!--Spring Boot 3.2.0-->
@@ -77,3 +77,40 @@ Centremos nuestra atención el componente `Job`:
     </dependency>
 </dependencies>
 ````
+
+En el `application.yml` agregamos la configuración a la base de datos y configuraciones iniciales de `spring batch`:
+
+````yml
+server:
+  port: 9090
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/db_spring_batch
+    username: postgres
+    password: magadiflo
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+  batch:
+    jdbc:
+      initialize-schema: always
+    job:
+      enabled: false
+````
+
+**DONDE**
+
+- `spring.batch.initialize-schema=always`, Si utiliza Spring Batch, viene preempaquetado con scripts de inicialización
+  SQL para las plataformas de bases de datos más populares. Spring Boot puede detectar su tipo de base de datos y
+  ejecutar esos scripts al arrancar. En resumen, la propiedad `..initialize-schema=always` permite inicializar siempre
+  la fuente de datos.
+- `spring.batch.job.enabled=false`, deshabilitamos la configuración de lanzamiento de trabajos por defecto de Spring
+  Boot Batch estableciendo la propiedad en false.
