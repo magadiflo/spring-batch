@@ -58,7 +58,7 @@ public class BatchConfig {
     @Bean
     public Step importStep() {
         return new StepBuilder("csvImport", this.jobRepository)
-                .<Student, Student>chunk(10, this.platformTransactionManager) // Cuántos registros o líneas queremos procesar a la vez
+                .<Student, Student>chunk(1000, this.platformTransactionManager) // Cuántos registros o líneas queremos procesar a la vez
                 .reader(this.itemReader())
                 .processor(this.processor())
                 .writer(this.write())
@@ -80,6 +80,10 @@ public class BatchConfig {
      *
      * Luego de ejecutar la aplicación y volver a importar los 100_000 registros, el tiempo que tardó fue de 31s558ms,
      * de este modo se redujo considerablemente la importación.
+     *
+     * Luego, en otra etapa del tutorial modificamos el chunk(1000, this.platformTransactionManager), del método
+     * importStep() del bean de arriba y cuando volvimos a probar la ejecución, ahora el tiempo se redujo aún más:
+     * 12s723ms
      */
     @Bean
     public TaskExecutor taskExecutor() {
