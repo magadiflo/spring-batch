@@ -14,6 +14,7 @@ public class StudentProcessor implements ItemProcessor<Student, Student> {
         /**
          * Aquí va toda la lógica de negocio, para transformar sus datos o procesar sus datos.
          */
+        student.setId(null); // Como nuestro archivo .csv viene con id, lo seteamos a null, para que el mismo hibernate le cree automáticamente un valor.
         return student;
     }
 }
