@@ -3,6 +3,11 @@ package dev.magadiflo.batch.app.config;
 import dev.magadiflo.batch.app.repositories.StudentRepository;
 import dev.magadiflo.batch.app.student.Student;
 import lombok.RequiredArgsConstructor;
+import org.springframework.batch.core.Job;
+import org.springframework.batch.core.Step;
+import org.springframework.batch.core.job.builder.JobBuilder;
+import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.data.RepositoryItemWriter;
 import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.LineMapper;
@@ -12,11 +17,14 @@ import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.transaction.PlatformTransactionManager;
 
 @RequiredArgsConstructor
 @Configuration
 public class BatchConfig {
 
+    private final JobRepository jobRepository;
+    private final PlatformTransactionManager platformTransactionManager;
     private final StudentRepository studentRepository;
 
     // 1. ItemReader: Leer
@@ -43,6 +51,23 @@ public class BatchConfig {
         writer.setRepository(this.studentRepository);
         writer.setMethodName("save");
         return writer;
+    }
+
+    @Bean
+    public Step importStep() {
+        return new StepBuilder("csvImport", this.jobRepository)
+                .<Student, Student>chunk(10, this.platformTransactionManager) // Cuántos registros o líneas queremos procesar a la vez
+                .reader(this.itemReader())
+                .processor(this.processor())
+                .writer(this.write())
+                .build();
+    }
+
+    @Bean
+    public Job runJob() {
+        return new JobBuilder("importStudents", this.jobRepository)
+                .start(this.importStep())
+                .build();
     }
 
     private LineMapper<Student> lineMapper() {
